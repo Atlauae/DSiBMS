@@ -297,12 +297,12 @@ https://www.datacamp.com/cheat-sheet/data-manipulation-with-dplyr-in-r-cheat-she
 ##############################################################################################
 ##                             ASSIGNMENT babyNames                                         ##
 ##############################################################################################
-
+library(tidyverse)
 
 "Define a research question for this data set and show the result in a nice colorful and annotated plot"
 
 #Select all baby names from the year 1978 and removing the year column
-babyNames_selection <- babyNames[(babyNames$Year == 1978),1:3]
+babyNames_selection <- babyNames[(babyNames$Year == 1987),1:3]
 
 #Seperate the baby names from 1978 in a variable containing boy and girl names
 babyNames_selection_boys <- babyNames_selection[(babyNames_selection$Sex == "Boys"),]
@@ -315,17 +315,18 @@ order(babyNames_selection$Count[(babyNames_selection$Sex == "Girls")], decreasin
 topten_boys <- babyNames_selection_boys[order(babyNames_selection_boys$Count, decreasing=TRUE),][1:10,]
 topten_girls <- babyNames_selection_girls[order(babyNames_selection_girls$Count, decreasing=TRUE),][1:10,]
 topten_bg <- rbind(topten_boys, topten_girls)
-
+topten_bg$Name <- factor(topten_bg$Name, levels=topten_bg$Name)
 
 #Create a bar plot with the count on the X axis and the names on the Y axis, coloured by sex
-ggplot(topten_bg, aes(Count,Name,color=Sex,fill=Sex)) +
+ggplot(topten_bg, aes(x = Count, y = Name, color = Sex, fill = Sex)) +
   facet_grid(rows = vars(Sex), scales = "free_y") +
-  geom_point(size=5) +
-  geom_segment(aes(x = 0, xend = Count, yend = Name), linewidth=2.5) +
-  geom_text(aes(label = Count), color = "white", size = 1.5) +
-  scale_x_continuous(breaks = seq(0, 70000, by = 10000), expand=expansion(mult = c(0,.05)), position="top") +
+  geom_point(size=6.5) +
+  geom_segment(aes(x = 0, xend = Count, yend = Name), linewidth=3.2, position="dodge") +
+  geom_text(aes(label = Count), color = "black", size = 3, hjust=-0.5) +
+  scale_y_discrete(limits=rev) +
+  scale_x_continuous(breaks = seq(0, 70000, by = 10000), expand=expansion(mult = c(0,.12)), position="top") +
   scale_color_manual(values=c("skyblue","hotpink")) +
-  labs(title = "Most popular baby names as counted in 1987") +
+  labs(title = "Top ten most popular baby names as counted in 1987, for boys and girls") +
   theme_classic() +
   theme(axis.line.y = element_blank(),
         axis.ticks.y = element_blank(),
