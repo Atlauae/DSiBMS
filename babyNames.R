@@ -63,7 +63,7 @@ https://www.w3schools.com/python/gloss_python_escape_characters.asp
 
 "NOTE: CHANGE THE LINE BELOW TO YOUR LAPTOP FOLDER!!!!!"
 
-setwd("G:\\My Drive\\WERK\\Cursus_DataScienceInBiomedicine\\babyNames_tutorial")
+setwd("C:\\Users\\Lenovo\\Documents\\github repositories\\DSiBMS")
 
 
 "To show the content of the current Working Directory execute the line below; again use Ctrl-Enter" 
@@ -100,7 +100,7 @@ babyNames_Filename <- "babyNames.db"
 babyNames_url <- paste(url,babyNames_Filename, sep="")
 
 # Option 1: from file ====> BUT BETTER IS TO USE OPTION 2 <=====
-babyNames<- read.table(babyNames_Filename, sep="," ,header=TRUE)
+#babyNames<- read.table(babyNames_Filename, sep="," ,header=TRUE)
 
 # Option 2: directly from the internet
 babyNames<- read.table(babyNames_url, sep="," ,header=TRUE)
@@ -130,13 +130,43 @@ view(babyNames)
 
 
 "How many names are in this dataset?"
+summary(babyNames)
+#Returned length for name is: 1352203, representing the amount of names in the dataset (not filtering out duplicates)
 
 "How many names with Anne?, Try also your own name
 NOTE babyNames$Name means; the column Names of data set babyNames "
 babyNames[(babyNames$Name == "Anne"),]
+anne_count <- 0
+for(i in babyNames[(babyNames$Name == "Anne"),3]){
+  anne_count <- anne_count + i
+}
+anne_count
+#Final anne_count resulted in a number of 122359 children having a name with Anne
+
+babyNames[(babyNames$Name == "Stefan"),]
+stefan_count <- 0
+for(i in babyNames[(babyNames$Name == "Stefan"),3]){
+  stefan_count <- stefan_count + i
+}
+stefan_count
+#Final stefan_count resulted in a number of 18073 children having a name with Stefan
+
+babyNames[(babyNames$Name == "Femke"),]
+femke_count <- 0
+for(i in babyNames[(babyNames$Name == "Femke"),3]){
+  femke_count <- femke_count + i
+}
+femke_count
+#Final femke_count resulted in a number of 5 children having a name with Femke
 
 "How many names with Anne in 1961?, Try also your own name"
 babyNames[(babyNames$Name == "Anne" & babyNames$Year=="1961"),]
+name_count <- 0
+for(i in babyNames[(babyNames$Name == "Anne" & babyNames$Year=="1961"),3]){
+  name_count <- name_count + i
+}
+name_count
+#Final name_count resulted in a number of 5533 children having a name with Anne in the year 1961
 
 "
 In the previous example we used == to filter rows. 
@@ -271,9 +301,35 @@ https://www.datacamp.com/cheat-sheet/data-manipulation-with-dplyr-in-r-cheat-she
 
 "Define a research question for this data set and show the result in a nice colorful and annotated plot"
 
- 
+#Select all baby names from the year 1978 and removing the year column
+babyNames_selection <- babyNames[(babyNames$Year == 1978),1:3]
+
+#Seperate the baby names from 1978 in a variable containing boy and girl names
+babyNames_selection_boys <- babyNames_selection[(babyNames_selection$Sex == "Boys"),]
+babyNames_selection_girls <- babyNames_selection[(babyNames_selection$Sex == "Girls"),]
+
+order(babyNames_selection$Count[(babyNames_selection$Sex == "Boys")], decreasing=TRUE)[1:10]
+order(babyNames_selection$Count[(babyNames_selection$Sex == "Girls")], decreasing=TRUE)[1:10]
+
+#Ordering baby names according to count and selecting the top 10 names with the highest count per sex and combining into 1 element
+topten_boys <- babyNames_selection_boys[order(babyNames_selection_boys$Count, decreasing=TRUE),][1:10,]
+topten_girls <- babyNames_selection_girls[order(babyNames_selection_girls$Count, decreasing=TRUE),][1:10,]
+topten_bg <- rbind(topten_boys, topten_girls)
 
 
-
-
-
+#Create a bar plot with the count on the X axis and the names on the Y axis, coloured by sex
+ggplot(topten_bg, aes(Count,Name,color=Sex,fill=Sex)) +
+  facet_grid(rows = vars(Sex), scales = "free_y") +
+  geom_point(size=5) +
+  geom_segment(aes(x = 0, xend = Count, yend = Name), linewidth=2.5) +
+  geom_text(aes(label = Count), color = "white", size = 1.5) +
+  scale_x_continuous(breaks = seq(0, 70000, by = 10000), expand=expansion(mult = c(0,.05)), position="top") +
+  scale_color_manual(values=c("skyblue","hotpink")) +
+  labs(title = "Most popular baby names as counted in 1987") +
+  theme_classic() +
+  theme(axis.line.y = element_blank(),
+        axis.ticks.y = element_blank(),
+        axis.text = element_text(color="black"),
+        axis.title = element_blank(),
+        strip.text = element_blank(),
+        legend.position = "right")
