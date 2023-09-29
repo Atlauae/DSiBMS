@@ -37,7 +37,7 @@ https://www.w3schools.com/python/gloss_python_escape_characters.asp
   2) Download data files you need to your laptop folder
   3) Adapt the line below to your meet your working folder"
 
-setwd("G:\\My Drive\\WERK\\Cursus_DataScienceInBiomedicine\\VolcanoPCA_tutorial")
+setwd("C:\\Users\\Lenovo\\Documents\\github repositories\\DSiBMS")
 
 
 
