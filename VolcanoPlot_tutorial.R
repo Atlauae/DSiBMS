@@ -56,7 +56,7 @@ https://www.w3schools.com/python/gloss_python_escape_characters.asp
   2) Download data files you need to your laptop folder
   3) Adapt the line below to your meet your working folder"
 
-setwd("G:\\My Drive\\WERK\\Cursus_DataScienceInBiomedicine\\VolcanoPCA_tutorial")
+setwd("C:\\Users\\Lenovo\\Documents\\github repositories\\DSiBMS")
 
 
 
@@ -307,8 +307,145 @@ One per Couple!!
 
 "
 
+#Retreive data for exercise, using T4-T1.txt
+url="http://ngs.molgenrug.nl/courses/DataScienceinBiomedicine/VolcanoPCA_tutorial/"
+DGE_Filename <- "T4-T1.txt"
+DGE_url <- paste(url, DGE_Filename, sep="")
+DGE_data <- read.table(DGE_url, header = TRUE, row.names = 1)
+
+#Retrieve genes of interest for classification of genes (using the class file of the example volcano plot)
+Class_Filename <- "trex2.Class.txt"
+Class_url <- paste(url, Class_Filename, sep = "")
+my_class_genes<- read.table(Class_url, header = TRUE, row.names = 1)
+head(my_class_genes)
+
+#Merge the Classification data with the DGE table
+DGE_Table <- merge(DGE_data, my_class_genes, by="row.names",all.x=TRUE)
+colnames(DGE_Table)[colnames(DGE_Table)=="GeneID.x"] <- "GeneID"
+
+View(DGE_Table)
+
+
+#Create custom theme for the plot
 
 
 
+#Create basic VolcanaPlot for initial data investigation
+VolcanoPlot <- ggplot(DGE_data,  aes(x=logFC,y=minFDR)) + geom_point(pch = 16, cex = 2)
+print(VolcanoPlot)
+
+#Create Volcano plot with added color factor based on gene class
+VolcanoPlot <- ggplot(DGE_Table,  aes(x=logFC,y=minFDR,color=factor(Group))) + geom_point(pch = 16, cex = 2) 
 
 
+##Set color palatte to match colors given in dataset
+#Retrieve colors in correct order from the dataset
+dataset_color <- unique(DGE_Table$Color[order(factor(DGE_Table$Group))])
+
+#Define color for non-specified genes
+dataset_color[is.na(dataset_color)] <- "black"
+
+#Set dataset_color as the color palatte to be used in the plot
+VolcanoPlot <- VolcanoPlot + scale_color_manual(values=dataset_color)
+
+
+##Adding informative visual information the plot
+#Define axis values
+xmin <- min(DGE_Table$logFC, na.rm=T)
+xmax <- max(DGE_Table$logFC, na.rm=T)
+ymin <- min(DGE_Table$minFDR, na.rm=T)
+ymax <- max(DGE_Table$minFDR, na.rm=T)
+
+#Decide which threshold values to use
+FDR_threshold <- -log2(0.05)
+Fold_threshold <- log2(2)
+
+#Add in gray areas indicating insignificant results and dashed lines bordering these areas
+VolcanoPlot <- VolcanoPlot + annotate("rect", xmin = xmin, xmax = xmax, ymin = 0, ymax = FDR_threshold, alpha = .2)
+VolcanoPlot <- VolcanoPlot + annotate("rect", xmin = -Fold_threshold, xmax = Fold_threshold, ymin = FDR_threshold, ymax = ymax, alpha = .2)
+VolcanoPlot <- VolcanoPlot + geom_segment(x = xmin, xend = xmax, y = FDR_threshold, yend = FDR_threshold, linetype="dashed")
+VolcanoPlot <- VolcanoPlot + geom_segment(x = -Fold_threshold, xend = -Fold_threshold, y = 0, yend = ymax, linetype="dashed")
+VolcanoPlot <- VolcanoPlot + geom_segment(x = Fold_threshold, xend = Fold_threshold, y = 0, yend = ymax, linetype="dashed")
+
+#Add title to the plot
+VolcanoPlot <- VolcanoPlot + ggtitle("My Nice Volcano Plot")
+
+#Add labels to the axes
+VolcanoPlot <- VolcanoPlot + labs(x = "-log2(adj. p-value)", y = "log2(Fold Change)")
+
+#Change legend title
+VolcanoPlot <- VolcanoPlot + guides(color = guide_legend(title = "Gene classes of interest"))
+
+#Add actual expression indication
+DGE_Table$sphere <- ifelse(DGE_Table$logCPM<1, 1, DGE_Table$logCPM)
+VolcanoPlot <- VolcanoPlot + geom_point(size = DGE_Table$sphere, alpha = 1/8)
+
+#Remove legend from plot and apply classis theme
+VolcanoPlot <- VolcanoPlot + theme_classic() + theme(legend.position="none")
+
+print(VolcanoPlot)
+
+
+
+### Create an MA plot for the dataset ###
+
+#Create Volcano plot with added color factor based on gene class
+MAPlot <- ggplot(DGE_Table,  aes(x=logCPM,y=LR,color=factor(Group))) + geom_point(shape = 16, cex = 2) 
+
+
+##Set color palatte to match colors given in dataset
+
+#Set dataset_color as the color palatte to be used in the plot
+MAPlot <- MAPlot + scale_color_manual(values=dataset_color)
+
+
+##Adding informative visual information the plot
+
+#Define axis values
+xmin_MA <- min(DGE_Table$logCPM, na.rm=T)
+xmax_MA <- max(DGE_Table$logCPM, na.rm=T)
+ymin_MA <- min(DGE_Table$LR, na.rm=T)
+ymax_MA <- max(DGE_Table$LR, na.rm=T)
+
+#Decide which threshold values to use
+LR_threshold <- -log2(2)
+
+#Add in gray areas indicating insignificant results and dashed lines bordering these areas
+MAPlot <- MAPlot + annotate("rect", xmin = xmin_MA, xmax = xmax_MA, ymin = LR_threshold, ymax = -LR_threshold, alpha = .2)
+MAPlot <- MAPlot + geom_segment(x = xmin_MA, xend = xmax_MA, y = LR_threshold, yend = LR_threshold, linetype="dashed")
+MAPlot <- MAPlot + geom_segment(x = xmin_MA, xend = xmax_MA, y = -LR_threshold, yend = -LR_threshold, linetype="dashed")
+
+#Add title to the plot
+MAPlot <- MAPlot + ggtitle("My Nice MA Plot")
+
+#Add labels to the axes
+MAPlot <- MAPlot + labs(x = "log2(CPM)", y = "-log2(LR)")
+
+#Apply classis theme
+MAPlot <- MAPlot + theme_classic()
+
+print(MAPlot)
+
+### Plot MA and Volcano plot together ###
+
+#Load required package
+library(grid)
+library(gtable)
+
+#Combine the plots into one
+g_MAPlot <- ggplotGrob(MAPlot)
+g_VolcanoPlot <- ggplotGrob(VolcanoPlot)
+g_MAPlot$widths <- unit.pmax(g_MAPlot$widths, g_VolcanoPlot$widths)
+g_VolcanoPlot$widths <- unit.pmax(g_MAPlot$widths, g_VolcanoPlot$widths)
+combined_plot <- rbind(g_MAPlot, g_VolcanoPlot, size = "first")
+
+
+#Generate combined plot
+grid.newpage()
+grid.draw(combined_plot)
+
+#Save combined plot as image
+png(file = "Combined_MA_Plot_Volcano_Plot.png", width = 10, height = 10, units = "in", res=300, pointsize = 12, bg = "white")	
+grid.newpage()
+grid.draw(combined_plot)
+dev.off()
