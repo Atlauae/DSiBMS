@@ -37,7 +37,7 @@ https://www.w3schools.com/python/gloss_python_escape_characters.asp
   2) Download data files you need to your laptop folder
   3) Adapt the line below to your meet your working folder"
 
-setwd("C:\\Users\\Lenovo\\Documents\\github repositories\\DSiBMS")
+setwd("C:\\Users\\stefa\\Documents\\github_repositories")
 
 
 
@@ -255,13 +255,13 @@ head(my_pca_data)
 # 7c Let's make nice plots 
 
 # Plot PC1 x PC2 of Time Series: DATASET 1
-PCAplot <- ggplot(my_pca_data,  aes(x=PC2,y=PC3, label=factor(Time), color = factor(Time))) + geom_point(pch = 18, cex = 4) 
+PCAplot <- ggplot(my_pca_data,  aes(x=PC1,y=PC2, label=factor(Time), color = factor(Time))) + geom_point(pch = 18, cex = 4) 
 PCAplot <- PCAplot + geom_text(hjust = -0.4, size = 3, check_overlap = TRUE, aes(colour = factor(Time)))
 PCAplot <- PCAplot + ggtitle("PCA plot")
 print(PCAplot)
 
 # Plot PC1 x PC2 of CodY: DATASET 2
-PCAplot <- ggplot(my_pca_data,  aes(x=PC2,y=PC3, label=factor(strain), color = factor(strain))) + geom_point(pch = 18, cex = 4) 
+PCAplot <- ggplot(my_pca_data,  aes(x=PC1,y=PC2, label=factor(strain), color = factor(strain))) + geom_point(pch = 18, cex = 4) 
 PCAplot <- PCAplot + geom_text(hjust = -0.4, size = 3, check_overlap = TRUE, aes(colour = factor(strain)))
 PCAplot <- PCAplot + ggtitle("PCA plot")
 print(PCAplot)
