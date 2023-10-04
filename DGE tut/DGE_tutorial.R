@@ -69,8 +69,12 @@ library(edgeR)
 
 
 ##3. Filtering	out	lowly	expressed	genes
-#Code is given in brightspace file, this has however already been done within this file and will therefore not be repeated
-#Previously in file option 2 was used, this was also used here
+#Code is given in brightspace file, this has however already been done within this file but is changed here
+cpms	<- 1000000*readCounts/colSums(readCounts)
+highlyExpressed	<- rowSums(cpms>=1)>=3
+filteredCounts	<- readCounts[highlyExpressed,]
+filteredCpms	<- cpms[highlyExpressed,]
+dim(filteredCounts)
 
 
 ##4. Perform differential expression analysis
