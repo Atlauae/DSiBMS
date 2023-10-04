@@ -1,0 +1,7 @@
+Sample	Name	Type
+SRR1796061	Young1	Young
+SRR1796064	Young2	Young
+SRR1796094	Young3	Young
+SRR1796237	Old1	Old
+SRR1796312	Old2	Old
+SRR1796318	Old3	Old
