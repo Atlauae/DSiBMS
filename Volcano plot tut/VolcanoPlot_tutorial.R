@@ -371,7 +371,7 @@ VolcanoPlot <- VolcanoPlot + geom_segment(x = Fold_threshold, xend = Fold_thresh
 VolcanoPlot <- VolcanoPlot + ggtitle("My Nice Volcano Plot")
 
 #Add labels to the axes
-VolcanoPlot <- VolcanoPlot + labs(x = "-log2(adj. p-value)", y = "log2(Fold Change)")
+VolcanoPlot <- VolcanoPlot + labs(x = "log2(Fold Change)", y = "-log2(adj. p-value)")
 
 #Change legend title
 VolcanoPlot <- VolcanoPlot + guides(color = guide_legend(title = "Gene classes of interest"))
@@ -390,7 +390,7 @@ print(VolcanoPlot)
 ### Create an MA plot for the dataset ###
 
 #Create Volcano plot with added color factor based on gene class
-MAPlot <- ggplot(DGE_Table,  aes(x=logCPM,y=LR,color=factor(Group))) + geom_point(shape = 16, cex = 2) 
+MAPlot <- ggplot(DGE_Table,  aes(x=logCPM,y=logFC,color=factor(Group))) + geom_point(shape = 16, cex = 2) 
 
 
 ##Set color palatte to match colors given in dataset
@@ -404,22 +404,22 @@ MAPlot <- MAPlot + scale_color_manual(values=dataset_color)
 #Define axis values
 xmin_MA <- min(DGE_Table$logCPM, na.rm=T)
 xmax_MA <- max(DGE_Table$logCPM, na.rm=T)
-ymin_MA <- min(DGE_Table$LR, na.rm=T)
-ymax_MA <- max(DGE_Table$LR, na.rm=T)
+ymin_MA <- min(DGE_Table$logFC, na.rm=T)
+ymax_MA <- max(DGE_Table$logFC, na.rm=T)
 
 #Decide which threshold values to use
-LR_threshold <- -log2(2)
+logFC_threshold <- -log2(2)
 
 #Add in gray areas indicating insignificant results and dashed lines bordering these areas
-MAPlot <- MAPlot + annotate("rect", xmin = xmin_MA, xmax = xmax_MA, ymin = LR_threshold, ymax = -LR_threshold, alpha = .2)
-MAPlot <- MAPlot + geom_segment(x = xmin_MA, xend = xmax_MA, y = LR_threshold, yend = LR_threshold, linetype="dashed")
-MAPlot <- MAPlot + geom_segment(x = xmin_MA, xend = xmax_MA, y = -LR_threshold, yend = -LR_threshold, linetype="dashed")
+MAPlot <- MAPlot + annotate("rect", xmin = xmin_MA, xmax = xmax_MA, ymin = logFC_threshold, ymax = -logFC_threshold, alpha = .2)
+MAPlot <- MAPlot + geom_segment(x = xmin_MA, xend = xmax_MA, y = logFC_threshold, yend = logFC_threshold, linetype="dashed")
+MAPlot <- MAPlot + geom_segment(x = xmin_MA, xend = xmax_MA, y = -logFC_threshold, yend = -logFC_threshold, linetype="dashed")
 
 #Add title to the plot
 MAPlot <- MAPlot + ggtitle("My Nice MA Plot")
 
 #Add labels to the axes
-MAPlot <- MAPlot + labs(x = "log2(CPM)", y = "-log2(LR)")
+MAPlot <- MAPlot + labs(x = "log2(CPM)", y = "log2(Fold Change)")
 
 #Apply classis theme
 MAPlot <- MAPlot + theme_classic()
