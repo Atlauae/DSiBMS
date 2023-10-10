@@ -46,7 +46,13 @@ metadata <- metadata[row_useful,2:ncol(metadata),]
 
 #Remove uneccesary indicators from the metadata
 metadata[3,] <- str_replace(metadata[3,], 'tissue: ', '')
+metadata[3,] <- str_replace(metadata[3,], 'corpus callosum', 'corpus_callosum')
+metadata[3,] <- str_replace(metadata[3,], 'frontal cortex', 'frontal_cortex')
+metadata[3,] <- str_replace(metadata[3,], 'internal capsule', 'internal_capsule')
+metadata[3,] <- str_replace(metadata[3,], 'parietal cortex', 'parietal_cortex')
+
 metadata[4,] <- str_replace(metadata[4,], 'disease state: ', '')
+metadata[4,] <- str_replace(metadata[4,], 'healthy control', 'control')
 
 #Load counts file
 counts <- read.csv(paste(COUNTS_PATH, 'GSE123496_Human_MSNL_counts.csv', sep=''), header=TRUE)
@@ -75,3 +81,76 @@ dgeList$genes <- genes
 
 #Calculate normalization factors using the TMM method
 dgeList <- calcNormFactors(dgeList, method = "TMM")
+
+
+
+###DGE between conditions
+#Define the model used for differential gene expression analysis total between different conditions
+condition <- dgeList$samples$patientcondition
+design_t <- model.matrix(~0 + condition)
+
+#Make  contrast.matrix. e.g. (determine comparisons of interest)
+contr.matrix_t <- makeContrasts(
+  condition_comp = conditioncontrol-conditionMS, 
+  levels = colnames(design_t))
+
+#Apply the statistical models
+v_t <- voom(dgeList, design_t, plot=FALSE)
+vfit_t <- lmFit(v_t, design_t)
+vfit_t <- contrasts.fit(vfit_t, contrasts=contr.matrix_t)
+
+lfc_cutoff = 1 
+tfit_t <- treat(vfit_t, lfc=lfc_cutoff)
+
+#Identify differentially expressed genes - p-value cutoff and logFoldChange cutoff
+Pvalue_cutoff = 0.05
+dt_t <- decideTests(tfit_t, p.value =Pvalue_cutoff)
+
+
+
+###DGE between brain regions
+#Define the model used for differential gene expression analysis of a brain regions between different conditions
+regions <- dgeList$samples$brainregion
+condition <- dgeList$samples$patientcondition
+design <- model.matrix(~0 + condition:regions)
+
+#Change design colnames
+colnames_design <- c('CTRLcc', 'MScc',
+                     'CTRLfc', 'MSfc',
+                     'CTRLhc', 'MShc',
+                     'CTRLic', 'MSic',
+                     'CTRLpc', 'MSpc')
+colnames(design) <- colnames_design
+
+#Make  contrast.matrix. e.g. (determine comparisons of interest)
+contr.matrix <- makeContrasts(
+  cc = CTRLcc-MScc, 
+  fc = CTRLfc-MSfc, 
+  hc = CTRLhc-MShc, 
+  ic = CTRLic-MSic,
+  pc = CTRLpc-MSpc,
+  levels = colnames(design))
+
+#Apply the statistical models
+v <- voom(dgeList, design, plot=FALSE)
+vfit <- lmFit(v, design)
+vfit <- contrasts.fit(vfit, contrasts=contr.matrix)
+
+lfc_cutoff = 1 
+tfit <- treat(vfit, lfc=lfc_cutoff)
+
+#Identify differentially expressed genes - p-value cutoff and logFoldChange cutoff
+Pvalue_cutoff = 0.05
+dt <- decideTests(tfit, p.value =Pvalue_cutoff)
+
+#Make volcano plot
+cc_plot <- data.frame(tfit$coefficients[,1], tfit$Amean, tfit$p.value[,1], dt[,1])
+colnames(cc_plot) <- c("logFC", "Amean", "p_value", "up_down")
+
+amplot <- ggplot(cc_plot, aes(x=Amean, y=logFC, col=factor(up_down)))
+amplot <- amplot + geom_point(alpha=0.4)
+print(amplot)
+
+volcplot <- ggplot(cc_plot, aes(x=logFC, y=-log(p_value,2), col=factor(up_down)))
+volcplot <- volcplot + geom_point()
+print(volcplot)
