@@ -4,6 +4,11 @@ library(Homo.sapiens)
 library(ggplot2)
 library(stringr)
 
+if	(!requireNamespace("BiocManager",	quietly	=	TRUE))
+  install.packages("BiocManager")
+packages <- c("limma", "Homo.sapiens", "stringr")
+BiocManager::install(packages)
+
 #Set working directory (change to fit your own thing)
 #If you remove the paste function and just put down getwd() it should return the folder your R file is in
 WORK_DIR <- paste(getwd(),'/Case study', sep='') ##Change this to match your working directory
