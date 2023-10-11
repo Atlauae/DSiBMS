@@ -213,9 +213,12 @@ print(volcplot)
 
 ##Generate dataframe containing information for the heatmap
 dif_gen_list <- NULL
+regions <- levels(factor(metadata_trans$Region))
+
 for(i in 1:5) {
   dif_gen <- row.names(subset(dt, dt[,i] == -1 | dt[,i] == 1))
   dif_gen_counts <- filteredCpms[row.names(filteredCpms) %in% dif_gen,]
+  dif_gen_counts <- dif_gen_counts[,colnames(dif_gen_counts) %in% metadata_trans$Sample[metadata_trans$Region == regions[i]]]
   assign(paste("dif_gen_", contr_names[i],  sep=""), dif_gen_counts)
 }
 dif_gen_list <- list(dif_gen_cc, dif_gen_fc, dif_gen_hc, dif_gen_ic, dif_gen_pc)
