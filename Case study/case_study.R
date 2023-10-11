@@ -173,7 +173,7 @@ tfit <- treat(vfit, lfc=lfc_cutoff)
 
 #Identify differentially expressed genes - p-value cutoff and logFoldChange cutoff
 Pvalue_cutoff = 0.05
-dt <- decideTests(tfit, p.value =Pvalue_cutoff)
+dt <- decideTests(tfit, p.value = Pvalue_cutoff)
 
 #Make volcano plot
 contr_names <- colnames(contr.matrix)
@@ -182,8 +182,8 @@ region_names <- levels(factor(metadata_trans$Region))
 for(i in 1:5){
   Amean <- rowMeans(filteredCpms[,colnames(filteredCpms) %in% metadata_trans$Sample[metadata_trans$Region == region_names[i]]])
   symbols <- dgeList$genes$SYMBOL[dgeList$genes$ENSEMBL %in% names(tfit$coefficients[,i])]
-  plot <- data.frame(tfit$coefficients[,i], Amean, tfit$p.value[,i], dt[,i], symbols)
-  colnames(plot) <- c("logFC", "Amean", "p_value", "up_down", "symbol")
+  plot <- data.frame(tfit$coefficients[,i], Amean, tfit$p.value[,i], p.adjust(tfit$p.value[,i], method="BH"), dt[,i], symbols)
+  colnames(plot) <- c("logFC", "Amean", "p_value", "adj_p_value", "up_down", "symbol")
   
   plot$symbol[is.na(plot$symbol)] <- row.names(plot[is.na(plot$symbol),])
   
