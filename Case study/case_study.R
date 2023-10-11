@@ -75,11 +75,11 @@ highlyExpressed <- NULL
 
 #Retrieve highly expressed genes per group as described in the lecture
 for(i in conditions) {
-  sub1 <- as.vector(metadata$Sample[metadata$Condition == i])
+  sub1 <- as.vector(metadata_trans$Sample[metadata_trans$Condition == i])
   subset1 <- cpms[, colnames(cpms) == sub1]
   
   for(o in regions) {
-    sub2 <- as.vector(metadata$Sample[metadata$Region == o])
+    sub2 <- as.vector(metadata_trans$Sample[metadata_trans$Region == o])
     subset2 <- subset1[, colnames(subset1) %in% sub2]
     highLowExpression <- rowSums(subset2>=1)>=round(ncol(subset2)/2)
     highExpression <- names(highLowExpression[!highLowExpression == FALSE])
@@ -180,17 +180,18 @@ contr_names <- colnames(contr.matrix)
 region_names <- levels(factor(metadata_trans$Region))
 
 for(i in 1:5){
-  Amean <- rowMeans(filteredCpms[,colnames(filteredCpms) == metadata_trans$Sample[metadata$Region == region_names[i]]])
+  Amean <- rowMeans(filteredCpms[,colnames(filteredCpms) %in% metadata_trans$Sample[metadata_trans$Region == region_names[i]]])
   plot <- data.frame(tfit$coefficients[,i], Amean, tfit$p.value[,i], dt[,i])
   colnames(plot) <- c("logFC", "Amean", "p_value", "up_down")
+  row.names(plot) <- dgeList$genes$SYMBOL[dgeList$genes$ENSEMBL == row.names(cc_plot)]
   
   assign(paste(contr_names[i], "_plot", sep=""), plot)
 }
 
-amplot <- ggplot(cc_plot, aes(x=log(Amean,2), y=logFC, col=factor(up_down)))
+amplot <- ggplot(fc_plot, aes(x=log(Amean,2), y=logFC, col=factor(up_down)))
 amplot <- amplot + geom_point(alpha=0.4)
 print(amplot)
 
-volcplot <- ggplot(cc_plot, aes(x=logFC, y=-log(p_value,2), col=factor(up_down)))
+volcplot <- ggplot(fc_plot, aes(x=logFC, y=-log(p_value,2), col=factor(up_down)))
 volcplot <- volcplot + geom_point()
 print(volcplot)
