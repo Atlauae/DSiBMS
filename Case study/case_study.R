@@ -249,6 +249,5 @@ for(i in 1:5){
 }
 
 ##Generate venn diagram for the different groups
-vennDiagram(dt[,c(1,2,3,4)], circle.col=c("#3498DB", "#E74C3C", "#2ECC71", "#FFA500", "#1ABC9C"),
-            include = c("up", "down"),
-            main="Significant gene expression between different groups")
+vennDiagram(dt[,c(1,2,3,4,5)], circle.col=c("#3498DB", "#E74C3C", "#2ECC71", "#FFA500", "#1ABC9C"),include = c("up"), main="Significant gene expression between different groups")
+vennDiagram(dt[,c(1,2,3,4,5)], circle.col=c("#3498DB", "#E74C3C", "#2ECC71", "#FFA500", "#1ABC9C"),include = c("down"), main="Significant gene expression between different groups")
