@@ -185,6 +185,8 @@ for(i in 1:5){
   plot <- data.frame(tfit$coefficients[,i], Amean, tfit$p.value[,i], dt[,i], symbols)
   colnames(plot) <- c("logFC", "Amean", "p_value", "up_down", "symbol")
   
+  plot$symbol[is.na(plot$symbol)] <- row.names(plot[is.na(plot$symbol),])
+  
   assign(paste(contr_names[i], "_plot", sep=""), plot)
 }
 
