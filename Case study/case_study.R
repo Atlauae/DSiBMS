@@ -138,6 +138,17 @@ tfit_t <- treat(vfit_t, lfc=lfc_cutoff)
 Pvalue_cutoff = 0.05
 dt_t <- decideTests(tfit_t, p.value =Pvalue_cutoff)
 
+Amean_t <- rowMeans(filteredCpms)
+symbols_t <- dgeList$genes$SYMBOL[dgeList$genes$ENSEMBL %in% names(tfit_t$coefficients[,1])]
+plot_t <- data.frame(tfit_t$coefficients[,1], Amean_t, tfit_t$p.value[,1], p.adjust(tfit_t$p.value[,1], method="BH"), dt_t[,1], symbols_t)
+colnames(plot_t) <- c("logFC", "Amean", "p_value", "adj_p_value", "up_down", "symbol")
+
+plot_t$symbol[is.na(plot_t$symbol)] <- row.names(plot_t[is.na(plot_t$symbol),])
+
+volcplot_t <- ggplot(plot_t, aes(x=logFC, y=-log(p_value,2), col=factor(up_down)))
+volcplot_t <- volcplot_t + geom_point()
+print(volcplot_t)
+
 
 
 ###DGE between brain regions
@@ -197,3 +208,28 @@ print(amplot)
 volcplot <- ggplot(fc_plot, aes(x=logFC, y=-log(p_value,2), col=factor(up_down)))
 volcplot <- volcplot + geom_point()
 print(volcplot)
+
+
+##Generate dataframe containing information for the heatmap
+dif_gen_heatmap <- NULL
+for(i in 1:5) {
+  dif_gen <- row.names(subset(dt, dt[,i] == -1 | dt[,i] == 1))
+  dif_gen_heatmap <- c(dif_gen_heatmap, dif_gen)
+}
+dif_gen_heatmap <- dif_gen_heatmap[!duplicated(dif_gen_heatmap)]
+
+heatmap_counts <- filteredCpms[row.names(filteredCpms) %in% dif_gen_heatmap,]
+
+logFC <- NULL
+for(i in 1:5){
+  logFC_comp <- tfit$coefficients[row.names(tfit) %in% row.names(heatmap_counts), i]
+  
+  logFC <- cbind(logFC, logFC_comp)
+  colnames(logFC)[i] <- 
+}
+
+heatmap_symbols <- dgeList$genes$SYMBOL[dgeList$genes$ENSEMBL %in% row.names(heatmap_counts)]
+heatmap_symbols[is.na(heatmap_symbols)] <- row.names(heatmap_counts[is.na(heatmap_symbols),])
+heatmap_symbols[duplicated(heatmap_symbols)] <- row.names(heatmap_counts[duplicated(heatmap_symbols),])
+row.names(heatmap_counts) <- heatmap_symbols
+
