@@ -212,29 +212,21 @@ print(volcplot)
 
 
 ##Generate dataframe containing information for the heatmap
-dif_gen_heatmap <- NULL
+dif_gen_list <- NULL
 for(i in 1:5) {
   dif_gen <- row.names(subset(dt, dt[,i] == -1 | dt[,i] == 1))
-  dif_gen_heatmap <- c(dif_gen_heatmap, dif_gen)
+  dif_gen_counts <- filteredCpms[row.names(filteredCpms) %in% dif_gen,]
+  assign(paste("dif_gen_", contr_names[i],  sep=""), dif_gen_counts)
 }
-dif_gen_heatmap <- dif_gen_heatmap[!duplicated(dif_gen_heatmap)]
+dif_gen_list <- list(dif_gen_cc, dif_gen_fc, dif_gen_hc, dif_gen_ic, dif_gen_pc)
 
-heatmap_counts <- filteredCpms[row.names(filteredCpms) %in% dif_gen_heatmap,]
-
-logFC <- NULL
 for(i in 1:5){
-  logFC_comp <- tfit$coefficients[row.names(tfit) %in% row.names(heatmap_counts), i]
-  
-  logFC <- cbind(logFC, logFC_comp)
-  colnames(logFC)[i] <- paste(region_names[i], "logFC", sep = "_")
+  heatmap_symbols <- dgeList$genes$SYMBOL[dgeList$genes$ENSEMBL %in% row.names(dif_gen_list[[i]])]
+  heatmap_symbols[is.na(heatmap_symbols)] <- row.names(dif_gen_list[[i]][is.na(heatmap_symbols),])
+  heatmap_symbols[duplicated(heatmap_symbols)] <- row.names(dif_gen_list[[i]][duplicated(heatmap_symbols),])
+  row.names(dif_gen_list[[i]]) <- heatmap_symbols
 }
 
-heatmap_counts_logFC <- cbind(heatmap_counts, logFC)
-
-heatmap_symbols <- dgeList$genes$SYMBOL[dgeList$genes$ENSEMBL %in% row.names(heatmap_counts_logFC)]
-heatmap_symbols[is.na(heatmap_symbols)] <- row.names(heatmap_counts_logFC[is.na(heatmap_symbols),])
-heatmap_symbols[duplicated(heatmap_symbols)] <- row.names(heatmap_counts_logFC[duplicated(heatmap_symbols),])
-row.names(heatmap_counts_logFC) <- heatmap_symbols
 
 
 
@@ -253,3 +245,9 @@ for(i in 1:5){
               file = paste(WORK_DIR, "/genelist_down_", contr_names[i], ".txt", sep=""), sep = "\t", row.names = FALSE)
 }
 
+
+
+##Generate venn diagram for the different groups
+vennDiagram(dt[,c(1,2,3,4)], circle.col=c("#3498DB", "#E74C3C", "#2ECC71", "#FFA500", "#1ABC9C"),
+            include = c("up", "down"),
+            main="Significant gene expression between different groups")
