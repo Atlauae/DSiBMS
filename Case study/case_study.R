@@ -210,6 +210,7 @@ volcplot <- volcplot + geom_point()
 print(volcplot)
 
 
+
 ##Generate dataframe containing information for the heatmap
 dif_gen_heatmap <- NULL
 for(i in 1:5) {
@@ -234,4 +235,21 @@ heatmap_symbols <- dgeList$genes$SYMBOL[dgeList$genes$ENSEMBL %in% row.names(hea
 heatmap_symbols[is.na(heatmap_symbols)] <- row.names(heatmap_counts_logFC[is.na(heatmap_symbols),])
 heatmap_symbols[duplicated(heatmap_symbols)] <- row.names(heatmap_counts_logFC[duplicated(heatmap_symbols),])
 row.names(heatmap_counts_logFC) <- heatmap_symbols
+
+
+
+##Generate objects and .txt files containing the up and downregulated genes per region for later analysis and upload to metascape
+for(i in 1:5){
+  dif_gen_up_ensembl <- row.names(tfit[dt[,i]==1,])
+  dif_gen_up_logfc <- tfit$coefficients[dt[,i]==1,i]
+  
+  dif_gen_down_ensembl <- row.names(tfit[dt[,i]==-1,])
+  dif_gen_down_logfc <- tfit$coefficients[dt[,i]==-1,i]
+  
+  write.table(data.frame(Gene = dif_gen_up_ensembl, logFC = dif_gen_up_logfc), 
+              file = paste(WORK_DIR, "/genelist_up_", contr_names[i], ".txt", sep=""), sep = "\t", row.names = FALSE)
+  
+  write.table(data.frame(Gene = dif_gen_down_ensembl, logFC = dif_gen_down_logfc), 
+              file = paste(WORK_DIR, "/genelist_down_", contr_names[i], ".txt", sep=""), sep = "\t", row.names = FALSE)
+}
 
