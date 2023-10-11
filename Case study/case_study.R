@@ -73,12 +73,13 @@ conditions <- levels(factor(metadata_trans$Condition))
 regions <- levels(factor(metadata_trans$Region))
 highlyExpressed <- NULL
 
+#Retrieve highly expressed genes per group as described in the lecture
 for(i in conditions) {
-  sub1 <- as.vector(metadata[1, metadata[4,] == i])
+  sub1 <- as.vector(metadata$Sample[metadata$Condition == i])
   subset1 <- cpms[, colnames(cpms) == sub1]
   
   for(o in regions) {
-    sub2 <- as.vector(metadata[1, metadata[3,] == o])
+    sub2 <- as.vector(metadata$Sample[metadata$Region == o])
     subset2 <- subset1[, colnames(subset1) %in% sub2]
     highLowExpression <- rowSums(subset2>=1)>=round(ncol(subset2)/2)
     highExpression <- names(highLowExpression[!highLowExpression == FALSE])
@@ -87,7 +88,10 @@ for(i in conditions) {
   }
 }
 
+#Remove duplicates from generated list
 highlyExpressed <- highlyExpressed[!duplicated(highlyExpressed)]
+
+#Assign filtered counts and cpms
 filteredCounts	<- counts[row.names(counts) %in% highlyExpressed,]
 filteredCpms	<- cpms[row.names(cpms) %in% highlyExpressed,]
 
@@ -172,9 +176,16 @@ Pvalue_cutoff = 0.05
 dt <- decideTests(tfit, p.value =Pvalue_cutoff)
 
 #Make volcano plot
-cc_Amean <- rowMeans(filteredCpms[,colnames(filteredCpms) == metadata[1, metadata[3,] == "corpus_callosum"]])
-cc_plot <- data.frame(tfit$coefficients[,1], cc_Amean, tfit$p.value[,1], dt[,1])
-colnames(cc_plot) <- c("logFC", "Amean", "p_value", "up_down")
+contr_names <- colnames(contr.matrix)
+region_names <- levels(factor(metadata_trans$Region))
+
+for(i in 1:5){
+  Amean <- rowMeans(filteredCpms[,colnames(filteredCpms) == metadata_trans$Sample[metadata$Region == region_names[i]]])
+  plot <- data.frame(tfit$coefficients[,i], Amean, tfit$p.value[,i], dt[,i])
+  colnames(plot) <- c("logFC", "Amean", "p_value", "up_down")
+  
+  assign(paste(contr_names[i], "_plot", sep=""), plot)
+}
 
 amplot <- ggplot(cc_plot, aes(x=log(Amean,2), y=logFC, col=factor(up_down)))
 amplot <- amplot + geom_point(alpha=0.4)
