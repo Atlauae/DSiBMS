@@ -225,11 +225,13 @@ for(i in 1:5){
   logFC_comp <- tfit$coefficients[row.names(tfit) %in% row.names(heatmap_counts), i]
   
   logFC <- cbind(logFC, logFC_comp)
-  colnames(logFC)[i] <- 
+  colnames(logFC)[i] <- paste(region_names[i], "logFC", sep = "_")
 }
 
-heatmap_symbols <- dgeList$genes$SYMBOL[dgeList$genes$ENSEMBL %in% row.names(heatmap_counts)]
-heatmap_symbols[is.na(heatmap_symbols)] <- row.names(heatmap_counts[is.na(heatmap_symbols),])
-heatmap_symbols[duplicated(heatmap_symbols)] <- row.names(heatmap_counts[duplicated(heatmap_symbols),])
-row.names(heatmap_counts) <- heatmap_symbols
+heatmap_counts_logFC <- cbind(heatmap_counts, logFC)
+
+heatmap_symbols <- dgeList$genes$SYMBOL[dgeList$genes$ENSEMBL %in% row.names(heatmap_counts_logFC)]
+heatmap_symbols[is.na(heatmap_symbols)] <- row.names(heatmap_counts_logFC[is.na(heatmap_symbols),])
+heatmap_symbols[duplicated(heatmap_symbols)] <- row.names(heatmap_counts_logFC[duplicated(heatmap_symbols),])
+row.names(heatmap_counts_logFC) <- heatmap_symbols
 
