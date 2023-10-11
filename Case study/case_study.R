@@ -181,7 +181,7 @@ region_names <- levels(factor(metadata_trans$Region))
 
 for(i in 1:5){
   Amean <- rowMeans(filteredCpms[,colnames(filteredCpms) %in% metadata_trans$Sample[metadata_trans$Region == region_names[i]]])
-  symbols <- dgeList$genes$SYMBOL[dgeList$genes$ENSEMBL %in% row.names(cc_plot)]
+  symbols <- dgeList$genes$SYMBOL[dgeList$genes$ENSEMBL %in% names(tfit$coefficients[,i])]
   plot <- data.frame(tfit$coefficients[,i], Amean, tfit$p.value[,i], dt[,i], symbols)
   colnames(plot) <- c("logFC", "Amean", "p_value", "up_down", "symbol")
   
