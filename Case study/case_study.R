@@ -167,11 +167,11 @@ colnames(design) <- colnames_design
 
 #Make  contrast.matrix. e.g. (determine comparisons of interest)
 contr.matrix <- makeContrasts(
-  cc = CTRLcc-MScc, 
-  fc = CTRLfc-MSfc, 
-  hc = CTRLhc-MShc, 
-  ic = CTRLic-MSic,
-  pc = CTRLpc-MSpc,
+  cc = MScc-CTRLcc, 
+  fc = MSfc-CTRLfc, 
+  hc = MShc-CTRLhc, 
+  ic = MSic-CTRLic,
+  pc = MSpc-CTRLpc,
   levels = colnames(design))
 
 #Apply the statistical models
@@ -247,8 +247,6 @@ for(i in 1:5){
   write.table(data.frame(Gene = dif_gen_down_ensembl, logFC = dif_gen_down_logfc), 
               file = paste(WORK_DIR, "/genelist_down_", contr_names[i], ".txt", sep=""), sep = "\t", row.names = FALSE)
 }
-
-
 
 ##Generate venn diagram for the different groups
 vennDiagram(dt[,c(1,2,3,4)], circle.col=c("#3498DB", "#E74C3C", "#2ECC71", "#FFA500", "#1ABC9C"),
