@@ -45,6 +45,9 @@ row_useful <- c(1,2,10,11)
 metadata <- metadata[row_useful,2:ncol(metadata),]
 
 #Remove uneccesary indicators from the metadata
+rownames_metadata <- c("Sample", "GEO_accession", "Region", "Condition")
+row.names(metadata) <- rownames_metadata
+
 metadata[3,] <- str_replace(metadata[3,], 'tissue: ', '')
 metadata[3,] <- str_replace(metadata[3,], 'corpus callosum', 'corpus_callosum')
 metadata[3,] <- str_replace(metadata[3,], 'frontal cortex', 'frontal_cortex')
@@ -53,6 +56,9 @@ metadata[3,] <- str_replace(metadata[3,], 'parietal cortex', 'parietal_cortex')
 
 metadata[4,] <- str_replace(metadata[4,], 'disease state: ', '')
 metadata[4,] <- str_replace(metadata[4,], 'healthy control', 'control')
+
+#Making a transposed version of the metadata for easier use later
+metadata_trans <- as.data.frame(t(metadata))
 
 #Load counts file
 counts <- read.csv(paste(COUNTS_PATH, 'GSE123496_Human_MSNL_counts.csv', sep=''), header=TRUE)
@@ -63,8 +69,8 @@ colnames(counts) <- metadata[1,]
 #Filtering out lowly expressed genes
 cpms	<- 1000000*counts/colSums(counts)
 
-conditions <- levels(factor(metadata[4,]))
-regions <- levels(factor(metadata[3,]))
+conditions <- levels(factor(metadata_trans$Condition))
+regions <- levels(factor(metadata_trans$Region))
 highlyExpressed <- NULL
 
 for(i in conditions) {
