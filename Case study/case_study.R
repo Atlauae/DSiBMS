@@ -227,6 +227,7 @@ for(i in 1:5){
   heatmap_symbols <- dgeList$genes$SYMBOL[dgeList$genes$ENSEMBL %in% row.names(dif_gen_list[[i]])]
   heatmap_symbols[is.na(heatmap_symbols)] <- row.names(dif_gen_list[[i]][is.na(heatmap_symbols),])
   heatmap_symbols[duplicated(heatmap_symbols)] <- row.names(dif_gen_list[[i]][duplicated(heatmap_symbols),])
+  dif_gen_list[[i]] <- cbind(dif_gen_list[[i]], heatmap_symbols)
   row.names(dif_gen_list[[i]]) <- heatmap_symbols
 }
 
