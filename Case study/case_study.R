@@ -3,6 +3,9 @@ library(edgeR)
 library(Homo.sapiens)
 library(ggplot2)
 library(stringr)
+library(reshape2)
+library(eulerr)
+library(gridExtra)
 
 if	(!requireNamespace("BiocManager",	quietly	=	TRUE))
   install.packages("BiocManager")
@@ -217,7 +220,7 @@ regions <- levels(factor(metadata_trans$Region))
 
 for(i in 1:5) {
   dif_gen <- row.names(subset(dt, dt[,i] == -1 | dt[,i] == 1))
-  dif_gen_counts <- filteredCpms[row.names(filteredCpms) %in% dif_gen,]
+  dif_gen_counts <- dgeList$counts[row.names(dgeList$counts) %in% dif_gen,]
   dif_gen_counts <- dif_gen_counts[,colnames(dif_gen_counts) %in% metadata_trans$Sample[metadata_trans$Region == regions[i]]]
   assign(paste("dif_gen_", contr_names[i],  sep=""), dif_gen_counts)
 }
@@ -226,12 +229,13 @@ dif_gen_list <- list(dif_gen_cc, dif_gen_fc, dif_gen_hc, dif_gen_ic, dif_gen_pc)
 for(i in 1:5){
   heatmap_symbols <- dgeList$genes$SYMBOL[dgeList$genes$ENSEMBL %in% row.names(dif_gen_list[[i]])]
   heatmap_symbols[is.na(heatmap_symbols)] <- row.names(dif_gen_list[[i]][is.na(heatmap_symbols),])
-  heatmap_symbols[duplicated(heatmap_symbols)] <- row.names(dif_gen_list[[i]][duplicated(heatmap_symbols),])
+  heatmap_symbols[duplicated(heatmap_symbols)] <- row.names(dif_gen_list[[i]])[duplicated(heatmap_symbols)]
   dif_gen_list[[i]] <- cbind(dif_gen_list[[i]], heatmap_symbols)
-  row.names(dif_gen_list[[i]]) <- heatmap_symbols
 }
 
-
+test <- melt(dif_gen_list[[1]], variable = "heatmap_symbols")
+colnames(test) <- c("Y", "X", "cpm")
+ggplot(test, aes(x = X, y=Y, fill=cpm)) + geom_tile()
 
 
 ##Generate objects and .txt files containing the up and downregulated genes per region for later analysis and upload to metascape
@@ -249,6 +253,15 @@ for(i in 1:5){
               file = paste(WORK_DIR, "/genelist_down_", contr_names[i], ".txt", sep=""), sep = "\t", row.names = FALSE)
 }
 
+
+
 ##Generate venn diagram for the different groups
-vennDiagram(dt[,c(1,2,3,4,5)], circle.col=c("#3498DB", "#E74C3C", "#2ECC71", "#FFA500", "#1ABC9C"),include = c("up"), main="Significant gene expression between different groups")
-vennDiagram(dt[,c(1,2,3,4,5)], circle.col=c("#3498DB", "#E74C3C", "#2ECC71", "#FFA500", "#1ABC9C"),include = c("down"), main="Significant gene expression between different groups")
+png(file = "venn_diagram_up.png", width = 10, height = 10, units = "in", res=300, pointsize = 12, bg = "white")	
+vennDiagram(dt, circle.col=c("#3498DB", "#E74C3C", "#2ECC71", "#FFA500", "#1ABC9C"),include = c("up"), 
+            main="Number of significantly upregulated genes different groups")
+dev.off()
+
+png(file = "venn_diagram_down.png", width = 10, height = 10, units = "in", res=300, pointsize = 12, bg = "white")	
+vennDiagram(dt[,c(1,2,3,4,5)], circle.col=c("#3498DB", "#E74C3C", "#2ECC71", "#FFA500", "#1ABC9C"),include = c("down"), 
+                main="Number of significantly downregulated genes different groups")
+dev.off()
